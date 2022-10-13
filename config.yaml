@@ -1,0 +1,14 @@
+---
+# Enter the desired SLO. For error rate SLOs this should be a single number, represent percentage,
+# usually between 99 to 99.999. For latency SLOs this should be a two element list. For example,
+# for the SLO specification: "90% of the requests should be with latency less than 200 ms" the list
+# will be [90, 200]
+SLO: 99.9
+
+# metric attributes
+namespace: 'AWS/ApiGateway'
+metric_name: '5XXError'
+# optionally choose specific dimmensions as dict or list of dicts. in case you want to alert
+# acrros all dimensions set to ~ (or null)
+dimensions_map:
+  ApiName: PetStore

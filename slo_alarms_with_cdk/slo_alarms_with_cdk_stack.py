@@ -4,47 +4,62 @@ from aws_cdk import (
     Duration
 )
 from constructs import Construct
-import configparser
+import yaml
 
-SLO = 99.9
 
 class SloAlarmsWithCdkStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        br_cfg = configparser.ConfigParser()
-        br_cfg.read('burn_rates.ini')
+        # read burn rates and windows configuration. DO NOT CHANGE!
+        with open('burn_rates.yaml', mode='rb') as f:
+            br_cfg = yaml.safe_load(f)
+        slo_period = br_cfg['SLOperiod']
 
+        # read user's configuration: SLO and metric to alert on
+        with open('config.yaml', mode='rb') as f:
+            cfg = yaml.safe_load(f)
+        SLO = cfg['SLO']
+        namespace = cfg['namespace']
+        metric_name = cfg['metric_name']
+        dimensions_map = cfg['dimensions_map']
+        if isinstance(cfg['SLO'], list):
+            SLOtype = 'Latency'
+        else:
+            SLOtype = 'ErrorRate'
+
+        # iterate on burn rates and windows
         brs = ['high', 'mid', 'low']
         wins = ['LongWin', 'ShortWin']
-
         for br in brs:
             # calculate the burn rate and the corresponding threshold
-            slo_period = float(br_cfg['SLO']['Period'])
-            eb_frac = float(br_cfg[br]['ErrBudgetPer']) / 100
-            alarm_win = float(br_cfg[br]['LongWin'])
+            eb_frac = br_cfg[br]['ErrBudgetPer'] / 100
+            alarm_win = br_cfg[br]['LongWin']
             br_val = 24 * 60 * slo_period / alarm_win * eb_frac
             threshold = br_val * (1 - SLO / 100)
 
-            alarm_id = "".join(['ErrorRateSLO', br , 'BurnRate'])
-            alarm_name = "-".join(['error-rate-SLO', br , 'burn-rate'])  
+            # prepare the id and the name for the composite alarm. to be used
+            # for the child alarms
+            alarm_id = "".join([SLOtype, 'SLO', br , 'BurnRate'])
+            alarm_name = "-".join([SLOtype, 'SLO', br , 'burn-rate'])  
 
             alarms = []
             for win in wins:
                 # define metric for the given window
                 metric = cw.Metric(
-                    namespace='AWS/ApiGateway',
-                    metric_name='5XXError',
-                    dimensions_map={'ApiName': 'PetStore'},
-                    period=Duration.minutes(int(br_cfg[br][win])),
+                    namespace=namespace,
+                    metric_name=metric_name,
+                    dimensions_map=dimensions_map,
+                    period=Duration.minutes(br_cfg[br][win]),
                 )
 
-                # define alarm on the above metric where the threshold is based on
-                # the SLO and the calculated burn_rate
+                # assign child alarm id & name based on those of the composite alarm
                 child_alarm_id = alarm_id + win
                 child_alarm_name = "-".join([alarm_name, win])
-              
+
+                # define alarm on the above metric where the threshold is based on
+                # the SLO and the calculated burn_rate              
                 alarm = cw.Alarm(
                     self, child_alarm_id,
                     metric=metric,

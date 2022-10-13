@@ -1,0 +1,17 @@
+---
+SLOperiod: 28
+
+high:
+  LongWin: 30
+  ShortWin: 3
+  ErrBudgetPer: 1
+
+mid:
+  LongWin: 180
+  ShortWin: 15
+  ErrBudgetPer: 2.5
+
+low:
+  LongWin: 1440
+  ShortWin: 120
+  ErrBudgetPer: 4
