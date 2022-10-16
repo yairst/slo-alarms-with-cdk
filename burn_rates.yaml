@@ -1,6 +1,10 @@
 ---
+# SLO period in days
 SLOperiod: 28
 
+# the following section define the long and short windows for each burn rate level: high, mid and low.
+# All the windows are in minutes. Also, the error budget percentage threshold is defined for
+# each burn rate level. The burn rates values are calculated in the Stack constructor.
 high:
   LongWin: 30
   ShortWin: 3

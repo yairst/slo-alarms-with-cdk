@@ -1,0 +1,20 @@
+---
+ErrorRate:
+  'AWS/ApiGateway':
+    metric_name: '5XXError'
+    statistic: 'avg'
+  'AWS/ApplicationELB':
+    math_expression: '(elb_errors + target_errors) / request_count'
+    using_metrics:
+      elb_errors: 'HTTPCode_ELB_5XX_Count'
+      target_errors: 'HTTPCode_Target_5XX_Count'
+      request_count: 'RequestCount'
+    statistic: 'sum'
+
+# for latency metrics where there is no statistic key the statistic is pNN.NN which is calculated
+# based on the SLO and the burn rate
+Latency:
+  'AWS/ApiGateway':
+    metric_name: Latency
+  'AWS/ApplicationELB':
+    metric_name: TargetResponseTime

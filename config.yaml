@@ -1,14 +1,33 @@
 ---
-# Enter the desired SLO. For error rate SLOs this should be a single number, represent percentage,
+# Enter the desired SLO as a list. For error rate SLOs this should be a single elemnt list with percentage,
 # usually between 99 to 99.999. For latency SLOs this should be a two element list. For example,
 # for the SLO specification: "90% of the requests should be with latency less than 200 ms" the list
-# will be [90, 200]
-SLO: 99.9
+# will be [90, 200]. In addition, for latency SLOs be careful to enetr the latency threshold in ms
+# or seconds, depends on the service/ metric. For example, ApiGateway Latency is in ms but
+# ApplicationELB TargetResponseTime is in seconds
+
+# example of error rate SLO:
+SLO: [99.9]
+
+# examples of latency SLOs:
+# ApiGateway latency SLO:
+# SLO: [99, 200]  # 99 % of the requests should be below 200 ms
+# ApplicationELB latency SLO:
+# SLO: [99, 0.2] # 99 % of the requests should be below 0.2 seconds
 
 # metric attributes
+
+# ApiGateway
 namespace: 'AWS/ApiGateway'
-metric_name: '5XXError'
-# optionally choose specific dimmensions as dict or list of dicts. in case you want to alert
-# acrros all dimensions set to ~ (or null)
-dimensions_map:
+# choose dimensions map as dict.
+dimensions_map: 
   ApiName: PetStore
+  Resource: '/pets'
+  Stage: test
+  Method: GET
+
+# AplicationELB
+# namespace: 'AWS/ApplicationELB'
+# # choose dimensions map as dict
+# dimensions_map: 
+#   LoadBalancer: 'xxxxx'
