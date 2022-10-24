@@ -3,11 +3,11 @@ import os
 
 import aws_cdk as cdk
 
-from slo_alarms_with_cdk.slo_alarms_with_cdk_stack import SloAlarmsWithCdkStack
+from slo_alarms_with_cdk.pipeline_stack import SloAlarmsPipelineStack
 
 
 app = cdk.App()
-SloAlarmsWithCdkStack(app, "SloAlarmsWithCdkStack",
+SloAlarmsPipelineStack(app, "SloAlarmsPipelineStack",
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.
