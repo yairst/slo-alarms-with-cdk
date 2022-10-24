@@ -4,6 +4,7 @@ from aws_cdk import (
     pipelines,
     aws_ssm as ssm,
 )
+from slo_alarms_with_cdk.pipeline_stage import SloAlarmsPipelineStage
 
 class SloAlarmsPipelineStack(Stack):
     
@@ -33,3 +34,6 @@ class SloAlarmsPipelineStack(Stack):
                 ]
             ),
         )
+
+        deploy = SloAlarmsPipelineStage(self, "Deploy")
+        deploy_stage = pipeline.add_stage(deploy)
