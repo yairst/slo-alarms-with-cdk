@@ -51,7 +51,7 @@ class SloAlarmsWithCdkStack(Stack):
         # create constant part of the alarms arns
         account_id = Stack.of(self).account
         region = Stack.of(self).region
-        arn_constant = ":".join(['arn:aws:cloudwatch', region, account_id])
+        arn_constant = ":".join(['arn:aws:cloudwatch', region, account_id, 'alarm'])
 
         # iterate on burn rates, severities and windows
         brs = ['high', 'mid', 'low']

@@ -3,6 +3,7 @@ from aws_cdk import (
     Stack,
     pipelines,
     aws_ssm as ssm,
+    aws_iam as iam,
 )
 from slo_alarms_with_cdk.pipeline_stage import SloAlarmsPipelineStage
 
@@ -37,8 +38,9 @@ class SloAlarmsPipelineStack(Stack):
 
         deploy = SloAlarmsPipelineStage(self, "Deploy")
         deploy_stage = pipeline.add_stage(deploy)
+
         deploy_stage.add_post(
-            pipelines.ShellStep(
+            pipelines.CodeBuildStep(
                 "TagAlarmsWithSeverities",
                 env={
                     "INFO_ARNS": deploy.alarms_arns_by_sev['INFO'],
@@ -58,7 +60,16 @@ class SloAlarmsPipelineStack(Stack):
                     --tags Severity=MINOR",
                     "aws resourcegroupstaggingapi tag-resources \
                     --resource-arn-list $CRITICAL_ARN \
-                    --tags Severity=CRITICAL"
+                    --tags Severity=CRITICAL",
                 ],
+                role_policy_statements=[
+                    iam.PolicyStatement(
+                        actions=[
+                            'tag:TagResources',
+                            'cloudwatch:TagResource'
+                        ],
+                        resources=["*"]
+                    )
+                ]
             )
         )
