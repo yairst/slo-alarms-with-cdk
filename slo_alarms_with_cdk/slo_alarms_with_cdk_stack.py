@@ -1,6 +1,7 @@
 from aws_cdk import (
     Stack,
     aws_cloudwatch as cw,
+    aws_ssm as ssm,
     Duration
 )
 from constructs import Construct
@@ -8,6 +9,10 @@ import yaml
 
 
 class SloAlarmsWithCdkStack(Stack):
+
+    @property
+    def alarms_arns_by_sev(self):
+        return self._alarms_arns_by_sev
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -43,10 +48,22 @@ class SloAlarmsWithCdkStack(Stack):
             if alarm_type == 'math':
                 self.metrics_dict = self.get_metrics_for_math_expresssion()
 
-        # iterate on burn rates and windows
+        # create constant part of the alarms arns
+        account_id = Stack.of(self).account
+        region = Stack.of(self).region
+        arn_constant = ":".join(['arn:aws:cloudwatch', region, account_id])
+
+        # iterate on burn rates, severities and windows
         brs = ['high', 'mid', 'low']
         wins = ['LongWin', 'ShortWin']
-        for br in brs:
+        sevs = ['CRITICAL', 'MINOR', 'WARNING']
+        self._alarms_arns_by_sev = {
+            'INFO': '',
+            'WARNING': arn_constant,
+            'MINOR': arn_constant,
+            'CRITICAL': arn_constant
+        }
+        for br, sev in zip(brs, sevs):
             # calculate the burn rate and the corresponding threshold
             eb_frac = br_cfg[br]['ErrBudgetPer'] / 100
             alarm_win = br_cfg[br]['LongWin']
@@ -67,7 +84,8 @@ class SloAlarmsWithCdkStack(Stack):
             # prepare the id and the name for the composite alarm. to be used
             # for the child alarms
             alarm_id = "".join([self.namespace, self.SLOtype, 'SLO', br , 'BurnRate'])
-            alarm_name = "-".join([self.namespace, self.SLOtype, 'SLO', br , 'burn-rate'])  
+            alarm_name = "-".join([self.namespace, self.SLOtype, 'SLO', br , 'burn-rate'])
+            self._alarms_arns_by_sev[sev] += ':' + alarm_name  
 
             alarms = []
             for win in wins:
@@ -83,6 +101,7 @@ class SloAlarmsWithCdkStack(Stack):
                 else:
                     alarm = self.create_math_expression_alarm()
                 alarms.append(alarm)
+                self._alarms_arns_by_sev['INFO'] += ":".join([arn_constant, self.child_alarm_name]) + " "
           
             # define composite alarm rule
             alarm_rule = cw.AlarmRule.all_of(*alarms)

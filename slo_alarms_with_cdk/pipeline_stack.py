@@ -37,3 +37,28 @@ class SloAlarmsPipelineStack(Stack):
 
         deploy = SloAlarmsPipelineStage(self, "Deploy")
         deploy_stage = pipeline.add_stage(deploy)
+        deploy_stage.add_post(
+            pipelines.ShellStep(
+                "TagAlarmsWithSeverities",
+                env={
+                    "INFO_ARNS": deploy.alarms_arns_by_sev['INFO'],
+                    "WARNING_ARN": deploy.alarms_arns_by_sev['WARNING'],
+                    "MINOR_ARN": deploy.alarms_arns_by_sev['MINOR'],
+                    "CRITICAL_ARN": deploy.alarms_arns_by_sev['CRITICAL'],
+                },
+                commands=[
+                    "aws resourcegroupstaggingapi tag-resources \
+                    --resource-arn-list $INFO_ARNS \
+                    --tags Severity=INFO",
+                    "aws resourcegroupstaggingapi tag-resources \
+                    --resource-arn-list $WARNING_ARN \
+                    --tags Severity=WARNING",
+                    "aws resourcegroupstaggingapi tag-resources \
+                    --resource-arn-list $MINOR_ARN \
+                    --tags Severity=MINOR",
+                    "aws resourcegroupstaggingapi tag-resources \
+                    --resource-arn-list $CRITICAL_ARN \
+                    --tags Severity=CRITICAL"
+                ],
+            )
+        )
