@@ -6,6 +6,7 @@ from aws_cdk import (
 )
 from constructs import Construct
 import yaml
+import json
 
 
 class SloAlarmsWithCdkStack(Stack):
@@ -66,8 +67,8 @@ class SloAlarmsWithCdkStack(Stack):
         for br, sev in zip(brs, sevs):
             # calculate the burn rate and the corresponding threshold
             eb_frac = br_cfg[br]['ErrBudgetPer'] / 100
-            alarm_win = br_cfg[br]['LongWin']
-            br_val = 24 * 60 * slo_period / alarm_win * eb_frac
+            self.alarm_win = br_cfg[br]['LongWin']
+            br_val = 24 * 60 * slo_period / self.alarm_win * eb_frac
             self.threshold = round(br_val * (1 - SLO[0] / 100), 5)
             if self.SLOtype == 'Latency':
                 # in latency case there is a possibility to get threshold above 1
@@ -105,10 +106,12 @@ class SloAlarmsWithCdkStack(Stack):
           
             # define composite alarm rule
             alarm_rule = cw.AlarmRule.all_of(*alarms)
+            desc = self.generate_desc(br, SLO)
             cw.CompositeAlarm(
                 self, alarm_id,
                 alarm_rule=alarm_rule,
-                composite_alarm_name=alarm_name
+                composite_alarm_name=alarm_name,
+                alarm_description=desc
             )
 
 
@@ -155,3 +158,55 @@ class SloAlarmsWithCdkStack(Stack):
             evaluation_periods=1,
         )
         return alarm
+
+    def generate_desc(self, br, SLO):
+        if self.alarm_win < 60:
+            time_unit = 'minutes'
+            alarm_win = self.alarm_win
+        else:
+            alarm_win = self.alarm_win / 60
+            if self.alarm_win == 60:
+                time_unit = 'hour'
+            else:
+                time_unit = 'hours'
+
+        if self.SLOtype == 'ErrorRate':
+            desc = " ".join([
+                'error rate in the last',
+                str(alarm_win),
+                time_unit,
+                ', in', self.namespace, '-',
+                json.dumps(self.dimensions_map)
+            ])
+            if br in ['high','mid']:
+                suffix = '.'
+                if br == 'high':
+                    prefix = 'Very high '
+                else:
+                    prefix = 'High '
+            else:
+                prefix = 'The '
+                suffix = ' is above normal.'
+            desc = prefix + desc + suffix
+
+        elif self.SLOtype == 'Latency':
+            if self.namespace == 'AWS/ApiGateway':
+                latency_time_unit = 'ms'
+            else:
+                latency_time_unit = 'seconds'
+            thresh = round(100 * self.threshold, 2)
+            desc = " ".join([
+                'More than',
+                str(thresh),
+                '% of the requests in',
+                self.namespace, '-',
+                json.dumps(self.dimensions_map),
+                'have latency above',
+                str(SLO),
+                latency_time_unit,
+                'in the last',
+                str(alarm_win),
+                time_unit, '.'
+            ])
+
+        return desc 
