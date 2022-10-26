@@ -35,32 +35,25 @@ class SloAlarmsPipelineStack(Stack):
                 ]
             ),
         )
-
+        
+        # define the alarms provision stage
         deploy = SloAlarmsPipelineStage(self, "Deploy")
-        deploy_stage = pipeline.add_stage(deploy)
 
-        deploy_stage.add_post(
-            pipelines.CodeBuildStep(
-                "TagAlarmsWithSeverities",
-                env={
-                    "INFO_ARNS": deploy.alarms_arns_by_sev['INFO'],
-                    "WARNING_ARN": deploy.alarms_arns_by_sev['WARNING'],
-                    "MINOR_ARN": deploy.alarms_arns_by_sev['MINOR'],
-                    "CRITICAL_ARN": deploy.alarms_arns_by_sev['CRITICAL'],
-                },
-                commands=[
-                    "aws resourcegroupstaggingapi tag-resources \
-                    --resource-arn-list $INFO_ARNS \
-                    --tags Severity=INFO",
-                    "aws resourcegroupstaggingapi tag-resources \
-                    --resource-arn-list $WARNING_ARN \
-                    --tags Severity=WARNING",
-                    "aws resourcegroupstaggingapi tag-resources \
-                    --resource-arn-list $MINOR_ARN \
-                    --tags Severity=MINOR",
-                    "aws resourcegroupstaggingapi tag-resources \
-                    --resource-arn-list $CRITICAL_ARN \
-                    --tags Severity=CRITICAL",
+        # define a sequence of post stages for tagging the alarms with severities.
+        # Need to define each severity as different step, since defining all the tagging
+        # in one step, with four different commands for each severity, results in "Rate exceeded"
+        # error message for 3 of the four api calls.
+        sevs = ['CRITICAL', 'MINOR', 'WARNING', 'INFO']
+        steps_seq = []
+        for sev in sevs:
+            step = pipelines.CodeBuildStep(
+                "".join(["Tag", sev, "Alarms"]),
+                commands = [
+                    "".join([
+                        "aws resourcegroupstaggingapi tag-resources --resource-arn-list ",
+                        deploy.alarms_arns_by_sev[sev], " ",
+                        "--tags Severity=", sev
+                    ])
                 ],
                 role_policy_statements=[
                     iam.PolicyStatement(
@@ -72,4 +65,8 @@ class SloAlarmsPipelineStack(Stack):
                     )
                 ]
             )
-        )
+            steps_seq.append(step)
+        steps_seq = pipelines.CodeBuildStep.sequence(steps_seq)
+
+        # add the stages to the pipeline
+        pipeline.add_stage(deploy, post=steps_seq)
