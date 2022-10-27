@@ -7,11 +7,11 @@
 # ApplicationELB TargetResponseTime is in seconds
 
 # example of error rate SLO:
-SLO: [99.9]
+# SLO: [99.9]
 
 # examples of latency SLOs:
 # ApiGateway latency SLO:
-# SLO: [99, 200]  # 99 % of the requests should be below 200 ms
+SLO: [99, 200]  # 99 % of the requests should be below 200 ms
 # ApplicationELB latency SLO:
 # SLO: [99, 0.2] # 99 % of the requests should be below 0.2 seconds
 

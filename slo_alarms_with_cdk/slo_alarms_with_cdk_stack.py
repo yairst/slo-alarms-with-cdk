@@ -194,15 +194,21 @@ class SloAlarmsWithCdkStack(Stack):
                 latency_time_unit = 'ms'
             else:
                 latency_time_unit = 'seconds'
-            thresh = round(100 * self.threshold, 2)
+            thresh = round(100 - float(self.statistic[1:]), 2)
+            if thresh >= 100:
+                prefix = 'All of the requests in'
+            else:
+                prefix = " ".join([
+                    'More than',
+                    str(thresh),
+                    '% of the requests in',
+                ])
             desc = " ".join([
-                'More than',
-                str(thresh),
-                '% of the requests in',
+                prefix,
                 self.namespace, '-',
                 json.dumps(self.dimensions_map),
                 'have latency above',
-                str(SLO),
+                str(SLO[1]),
                 latency_time_unit,
                 'in the last',
                 str(alarm_win),
