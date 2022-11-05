@@ -2,6 +2,8 @@ from aws_cdk import (
     Stack,
     aws_cloudwatch as cw,
     aws_ssm as ssm,
+    aws_sns as sns,
+    aws_cloudwatch_actions as cw_actions,
     Duration
 )
 from constructs import Construct
@@ -49,10 +51,18 @@ class SloAlarmsWithCdkStack(Stack):
             if alarm_type == 'math':
                 self.metrics_dict = self.get_metrics_for_math_expresssion()
 
+        # get the SNS topic ARN for the action to be triggered by the composite alarms
+        sns_topic_arn = ssm.StringParameter.from_string_parameter_name(
+            self,
+            "SnsTopicARN",
+            "sns-topic-for-slo-alarms"
+            ).string_value
+        self.topic = sns.Topic.from_topic_arn(self, "SloAlarmsTopic", sns_topic_arn)
+
         # create constant part of the alarms arns
         account_id = Stack.of(self).account
         region = Stack.of(self).region
-        arn_constant = ":".join(['arn:aws:cloudwatch', region, account_id, 'alarm'])
+        self.arn_constant = ":".join(['arn:aws:cloudwatch', region, account_id, 'alarm'])
 
         # iterate on burn rates, severities and windows
         brs = ['high', 'mid', 'low']
@@ -60,10 +70,11 @@ class SloAlarmsWithCdkStack(Stack):
         sevs = ['CRITICAL', 'MINOR', 'WARNING']
         self._alarms_arns_by_sev = {
             'INFO': '',
-            'WARNING': arn_constant,
-            'MINOR': arn_constant,
-            'CRITICAL': arn_constant
+            'WARNING': self.arn_constant,
+            'MINOR': self.arn_constant,
+            'CRITICAL': self.arn_constant
         }
+        self.composite_alarms = {}
         for br, sev in zip(brs, sevs):
             # calculate the burn rate and the corresponding threshold
             eb_frac = br_cfg[br]['ErrBudgetPer'] / 100
@@ -84,35 +95,28 @@ class SloAlarmsWithCdkStack(Stack):
 
             # prepare the id and the name for the composite alarm. to be used
             # for the child alarms
-            alarm_id = "".join([self.namespace, self.SLOtype, 'SLO', br , 'BurnRate'])
-            alarm_name = "-".join([self.namespace, self.SLOtype, 'SLO', br , 'burn-rate'])
-            self._alarms_arns_by_sev[sev] += ':' + alarm_name  
+            self.alarm_id = "".join([self.namespace, self.SLOtype, 'SLO', br , 'BurnRate'])
+            self.alarm_name = "-".join([self.namespace, self.SLOtype, 'SLO', br , 'burn-rate'])
+            self._alarms_arns_by_sev[sev] += ':' + self.alarm_name  
 
-            alarms = []
+            self.alarms = []
             for win in wins:
                 # define math expression
                 self.period = Duration.minutes(br_cfg[br][win])
 
                 # assign child alarm id & name based on those of the composite alarm
-                self.child_alarm_id = alarm_id + win
-                self.child_alarm_name = "-".join([alarm_name, win])
+                self.child_alarm_id = self.alarm_id + win
+                self.child_alarm_name = "-".join([self.alarm_name, win])
 
                 if alarm_type == 'metric':
                     alarm = self.create_metric_alarm()
                 else:
                     alarm = self.create_math_expression_alarm()
-                alarms.append(alarm)
-                self._alarms_arns_by_sev['INFO'] += ":".join([arn_constant, self.child_alarm_name]) + " "
+                self.alarms.append(alarm)
+                self._alarms_arns_by_sev['INFO'] += ":".join([self.arn_constant, self.child_alarm_name]) + " "
           
             # define composite alarm rule
-            alarm_rule = cw.AlarmRule.all_of(*alarms)
-            desc = self.generate_desc(br, SLO)
-            cw.CompositeAlarm(
-                self, alarm_id,
-                alarm_rule=alarm_rule,
-                composite_alarm_name=alarm_name,
-                alarm_description=desc
-            )
+            self.composite_alarms[br] = self.create_composite_alarm(br, SLO)
 
 
     def get_metrics_for_math_expresssion(self):
@@ -134,11 +138,12 @@ class SloAlarmsWithCdkStack(Stack):
             period=self.period,
             label=self.SLOtype
         )
-        alarm = math_expression.create_alarm(self,
-                                            self.child_alarm_id,
-                                            alarm_name=self.child_alarm_name,
-                                            threshold=self.threshold,
-                                            evaluation_periods=1)
+        alarm = math_expression.create_alarm(
+            self, self.child_alarm_id,
+            alarm_name=self.child_alarm_name,
+            threshold=self.threshold,
+            evaluation_periods=1
+        )
         return alarm
 
     def create_metric_alarm(self):
@@ -216,3 +221,47 @@ class SloAlarmsWithCdkStack(Stack):
             ])
 
         return desc 
+
+    def create_composite_alarm(self, br, SLO):
+        alarm_rule = cw.AlarmRule.all_of(*self.alarms)
+        desc = self.generate_desc(br, SLO)
+        if (br == 'mid') or (br == 'low'):
+            if (br == 'mid'):
+                suppresor = self.composite_alarms['high']
+            else: # br == 'low'
+                aux_alarm_rule = cw.AlarmRule.any_of(
+                    self.composite_alarms['high'],
+                    self.composite_alarms['mid']
+                )
+                aux_alarm_id = "".join([
+                    self.namespace, self.SLOtype,
+                    'SLO', 'AuxiliaryMidOrHighSuppresorAlarm'
+                ])
+                aux_alarm_name = "-".join([
+                    self.namespace, self.SLOtype,
+                    'SLO', 'auxiliary-mid-or-high-suppresor-alarm'
+                ])
+                self._alarms_arns_by_sev['INFO'] += ":".join([
+                    self.arn_constant, aux_alarm_name]) + " "
+                suppresor = cw.CompositeAlarm(
+                    self, aux_alarm_id,
+                    alarm_rule=aux_alarm_rule,
+                    composite_alarm_name=aux_alarm_name,
+                )
+            composite_alarm = cw.CompositeAlarm(
+                self, self.alarm_id,
+                alarm_rule=alarm_rule,
+                composite_alarm_name=self.alarm_name,
+                alarm_description=desc,
+                actions_suppressor=suppresor
+            )
+        else: # br == 'high'
+            composite_alarm = cw.CompositeAlarm(
+                self, self.alarm_id,
+                alarm_rule=alarm_rule,
+                composite_alarm_name=self.alarm_name,
+                alarm_description=desc
+            )
+        
+        composite_alarm.add_alarm_action(cw_actions.SnsAction(self.topic))
+        return composite_alarm
