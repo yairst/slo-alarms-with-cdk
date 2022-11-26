@@ -4,6 +4,7 @@ import os
 import aws_cdk as cdk
 
 from slo_alarms_with_cdk.pipeline_stack import SloAlarmsPipelineStack
+from slo_alarms_with_cdk.pipeline_stage import SloAlarmsPipelineStage
 
 
 app = cdk.App()
@@ -24,5 +25,8 @@ SloAlarmsPipelineStack(app, "SloAlarmsPipelineStack",
 
     # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
     )
-
+# add stage for quick test without triggering the pipeline, especially for changing
+# values in config.yaml and test the resulting resources without messes up git history
+# ref. to this solution: https://www.youtube.com/watch?v=v9lhX0tAgjY
+SloAlarmsPipelineStage(app, "DeployWithoutPipeline")
 app.synth()

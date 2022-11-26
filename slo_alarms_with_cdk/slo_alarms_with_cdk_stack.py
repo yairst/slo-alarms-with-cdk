@@ -97,6 +97,10 @@ class SloAlarmsWithCdkStack(Stack):
             # for the child alarms
             self.alarm_id = "".join([self.namespace, self.SLOtype, 'SLO', br , 'BurnRate'])
             self.alarm_name = "-".join([self.namespace, self.SLOtype, 'SLO', br , 'burn-rate'])
+            # avoid collision between alarm names in case of testing without pipeline
+            if "DeployWithoutPipeline" in self.artifact_id:
+                self.alarm_id = "Test" + self.alarm_id
+                self.alarm_name = "test-" + self.alarm_name
             self._alarms_arns_by_sev[sev] += ':' + self.alarm_name  
 
             self.alarms = []
@@ -241,6 +245,10 @@ class SloAlarmsWithCdkStack(Stack):
                     self.namespace, self.SLOtype,
                     'SLO', 'auxiliary-mid-or-high-suppresor-alarm'
                 ])
+                # avoid collision between alarm names in case of testing without pipeline
+                if "DeployWithoutPipeline" in self.artifact_id:
+                    aux_alarm_id = "Test" + aux_alarm_id
+                    aux_alarm_name = "test" + aux_alarm_name
                 self._alarms_arns_by_sev['INFO'] += ":".join([
                     self.arn_constant, aux_alarm_name]) + " "
                 suppresor = cw.CompositeAlarm(
