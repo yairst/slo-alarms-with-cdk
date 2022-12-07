@@ -23,7 +23,7 @@ class SloAlarmsPipelineStack(Stack):
         pipeline = pipelines.CodePipeline(
             self,
             "Pipeline",
-            synth=pipelines.ShellStep(
+            synth=pipelines.CodeBuildStep(
                 "Synth",
                 input=pipelines.CodePipelineSource.connection('yairst/slo-alarms-with-cdk', 'main',
                 connection_arn=connection_arn
@@ -32,6 +32,12 @@ class SloAlarmsPipelineStack(Stack):
                     "npm install -g aws-cdk",  # Installs the cdk cli on Codebuild
                     "pip install -r requirements.txt",  # Instructs Codebuild to install required packages
                     "cdk synth",
+                ],
+                role_policy_statements=[
+                    iam.PolicyStatement(
+                        actions=["cloudwatch:GetMetricData"],
+                        resources=["*"],
+                    )
                 ]
             ),
         )
