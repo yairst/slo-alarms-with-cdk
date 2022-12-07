@@ -9,7 +9,11 @@ from aws_cdk import (
 from constructs import Construct
 import yaml
 import json
+import boto3
+import time
+import re
 
+cw_client = boto3.client('cloudwatch')
 
 class SloAlarmsWithCdkStack(Stack):
 
@@ -23,11 +27,12 @@ class SloAlarmsWithCdkStack(Stack):
         # read burn rates and windows configuration. DO NOT CHANGE!
         with open('burn_rates.yaml', mode='rb') as f:
             br_cfg = yaml.safe_load(f)
-        slo_period = br_cfg['SLOperiod']
+        self.slo_period = br_cfg['SLOperiod']
 
         # read user's configuration: SLO and metric to alert on
         with open('config.yaml', mode='rb') as f:
             cfg = yaml.safe_load(f)
+        br_type = cfg['br_type']
         SLO = cfg['SLO']
         self.namespace = cfg['namespace']
         self.dimensions_map = cfg['dimensions_map']
@@ -79,7 +84,7 @@ class SloAlarmsWithCdkStack(Stack):
             # calculate the burn rate and the corresponding threshold
             eb_frac = br_cfg[br]['ErrBudgetPer'] / 100
             self.alarm_win = br_cfg[br]['LongWin']
-            br_val = 24 * 60 * slo_period / self.alarm_win * eb_frac
+            br_val = 24 * 60 * self.slo_period / self.alarm_win * eb_frac
             self.threshold = round(br_val * (1 - SLO[0] / 100), 5)
             if self.SLOtype == 'Latency':
                 # in latency case there is a possibility to get threshold above 1
@@ -121,6 +126,22 @@ class SloAlarmsWithCdkStack(Stack):
           
             # define composite alarm rule
             self.composite_alarms[br] = self.create_composite_alarm(br, SLO)
+
+        if br_type == 'dynamic':
+            # read Nslo metric from metrics.yaml
+            self.n_slo_metric = metrics_cfg['Nslo'][self.namespace]
+
+            # get number of requests for the last SLO period - Nslo
+            n_slo = self.get_n_slo()
+
+            # create SSM parameter with Nslo as value
+            dim_str = json.dumps(self.dimensions_map)
+            dim_str = re.sub(r'[{}"]', "", dim_str).replace(': ',"-").replace(", ","/")
+            param_name = '/'.join(['/SloPeriodRequestCount', self.namespace[4:], dim_str])
+            ssm.StringParameter(self, "mySsmParameter",
+                parameter_name=param_name,
+                string_value=str(n_slo)
+            )
 
 
     def get_metrics_for_math_expresssion(self):
@@ -273,3 +294,36 @@ class SloAlarmsWithCdkStack(Stack):
         
         composite_alarm.add_alarm_action(cw_actions.SnsAction(self.topic))
         return composite_alarm
+
+    def get_n_slo(self):
+        time_end = int(time.time())
+        time_start = time_end - 3600 * 24 * self.slo_period
+        req_count = cw_client.get_metric_data(
+        MetricDataQueries=[
+            {
+                "Id": "n_slo",
+                "MetricStat": {
+    			    "Metric": {
+    				    "Namespace": self.namespace,
+    				    "MetricName": self.n_slo_metric['metric_name'],
+    				    "Dimensions": self.dimensions_dict_to_list()
+    			    },
+    			    "Period": 3600,
+    			    "Stat": self.n_slo_metric['statistic']
+    		    },
+    		    "ReturnData": True,
+    	    },
+    	],
+        StartTime=time_start,
+        EndTime=time_end
+	    )
+        n_slo = int(sum(req_count['MetricDataResults'][0]['Values']))
+        return n_slo
+        
+
+    def dimensions_dict_to_list(self):
+        dim_l = []
+        for k, v in self.dimensions_map.items():
+            cur = {"Name": k, "Value": v}
+            dim_l.append(cur)
+        return dim_l

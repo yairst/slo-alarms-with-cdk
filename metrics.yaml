@@ -18,3 +18,11 @@ Latency:
     metric_name: Latency
   'AWS/ApplicationELB':
     metric_name: TargetResponseTime
+
+Nslo:
+  'AWS/ApiGateway':
+    metric_name: Count
+    statistic: SampleCount
+  'AWS/ApplicationELB':
+    metric_name: RequestCount
+    statistic: Sum
