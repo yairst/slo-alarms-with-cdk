@@ -6,6 +6,7 @@ from aws_cdk import (
     aws_iam as iam,
 )
 from slo_alarms_with_cdk.pipeline_stage import SloAlarmsPipelineStage
+import yaml
 
 class SloAlarmsPipelineStack(Stack):
     
@@ -18,6 +19,21 @@ class SloAlarmsPipelineStack(Stack):
             "ConnectionARN",
             "slo-alarms-connection-arn"
             ).string_value
+
+        # in case of dynamic burn rate we need to give the Synth stage in the pipeline
+        # permission to call GetMetricData to get the total request count for the SLO period.
+        with open('config.yaml', mode='rb') as f:
+            cfg = yaml.safe_load(f)
+        br_type = cfg['br_type']
+        if br_type == 'static':
+            role_policy_statements = None
+        else:
+            role_policy_statements = [
+                    iam.PolicyStatement(
+                        actions=["cloudwatch:GetMetricData"],
+                        resources=["*"],
+                    )
+                ] 
 
         # Pipeline code goes here
         pipeline = pipelines.CodePipeline(
@@ -33,12 +49,7 @@ class SloAlarmsPipelineStack(Stack):
                     "pip install -r requirements.txt",  # Instructs Codebuild to install required packages
                     "cdk synth",
                 ],
-                role_policy_statements=[
-                    iam.PolicyStatement(
-                        actions=["cloudwatch:GetMetricData"],
-                        resources=["*"],
-                    )
-                ]
+                role_policy_statements=role_policy_statements
             ),
         )
         

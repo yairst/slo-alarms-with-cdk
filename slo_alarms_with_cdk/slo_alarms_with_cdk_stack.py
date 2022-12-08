@@ -136,9 +136,10 @@ class SloAlarmsWithCdkStack(Stack):
 
             # create SSM parameter with Nslo as value
             dim_str = json.dumps(self.dimensions_map)
-            dim_str = re.sub(r'[{}"]', "", dim_str).replace(': ',"-").replace(", ","/")
+            dim_str = re.sub(r'[{}" ]', "", dim_str)
+            dim_str = re.sub(r'[:/]', "-", dim_str).replace(",","/")
             param_name = '/'.join(['/SloPeriodRequestCount', self.namespace[4:], dim_str])
-            ssm.StringParameter(self, "mySsmParameter",
+            ssm.StringParameter(self, "SloPeriodRequestCount",
                 parameter_name=param_name,
                 string_value=str(n_slo)
             )
