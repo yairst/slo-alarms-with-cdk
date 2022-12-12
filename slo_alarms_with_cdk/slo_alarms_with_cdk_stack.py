@@ -12,6 +12,7 @@ import json
 import boto3
 import time
 import re
+from .dynamic_burn_rate_stack import DynamicBurnRateStack
 
 cw_client = boto3.client('cloudwatch')
 
@@ -135,13 +136,39 @@ class SloAlarmsWithCdkStack(Stack):
             n_slo = self.get_n_slo()
 
             # create SSM parameter with Nslo as value
-            dim_str = json.dumps(self.dimensions_map)
-            dim_str = re.sub(r'[{}" ]', "", dim_str)
-            dim_str = re.sub(r'[:/]', "-", dim_str).replace(",","/")
+            dim_str = self.dict_to_valid_ssm_parameter_name(self.dimensions_map)
             param_name = '/'.join(['/SloPeriodRequestCount', self.namespace[4:], dim_str])
-            ssm.StringParameter(self, "SloPeriodRequestCount",
+            if "DeployWithoutPipeline" in self.artifact_id:
+                param_name = '/test' + param_name
+            n_slo_param = ssm.StringParameter(self, "SloPeriodRequestCount",
                 parameter_name=param_name,
                 string_value=str(n_slo)
+            )
+
+            # create lambda with scheduler to periodically update the threshold
+            env_vars = {
+                'NAMESPACE': self.namespace,
+                'SLO_TYPE': self.SLOtype,
+                'SLO': str(SLO[0]),
+                'HIGH_BR_ERR_BUDGET_PER': str(br_cfg['high']['ErrBudgetPer']),
+                'MID_BR_ERR_BUDGET_PER': str(br_cfg['mid']['ErrBudgetPer']),
+                'LOW_BR_ERR_BUDGET_PER': str(br_cfg['low']['ErrBudgetPer']),
+                'TEST': 'false',
+                'REQUEST_COUNT_METRIC_NAME': self.n_slo_metric['metric_name'],
+                'REQUEST_COUNT_STAT': self.n_slo_metric['statistic'],
+                'SSM_PARAM_NAME': n_slo_param.parameter_name
+            }
+            if "DeployWithoutPipeline" in self.artifact_id:
+                env_vars['TEST'] = 'true'
+            sched_rates = {
+                'high': Duration.minutes(br_cfg['high']['ShortWin']),
+                'mid': Duration.minutes(br_cfg['mid']['ShortWin']),
+                'low': Duration.minutes(br_cfg['low']['ShortWin'])
+            }
+            DynamicBurnRateStack(
+                self, "DynamicBurnRateStack",
+                env_vars=env_vars,
+                sched_rates=sched_rates
             )
 
 
@@ -320,7 +347,6 @@ class SloAlarmsWithCdkStack(Stack):
 	    )
         n_slo = int(sum(req_count['MetricDataResults'][0]['Values']))
         return n_slo
-        
 
     def dimensions_dict_to_list(self):
         dim_l = []
@@ -328,3 +354,9 @@ class SloAlarmsWithCdkStack(Stack):
             cur = {"Name": k, "Value": v}
             dim_l.append(cur)
         return dim_l
+
+    def dict_to_valid_ssm_parameter_name(self, d):
+        s = json.dumps(d)
+        s = re.sub(r'[{}" ]', "", s)
+        s = re.sub(r'[:/]', "-", s).replace(",","/")
+        return s

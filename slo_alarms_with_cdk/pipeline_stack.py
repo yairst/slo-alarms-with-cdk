@@ -29,11 +29,11 @@ class SloAlarmsPipelineStack(Stack):
             role_policy_statements = None
         else:
             role_policy_statements = [
-                    iam.PolicyStatement(
-                        actions=["cloudwatch:GetMetricData"],
-                        resources=["*"],
-                    )
-                ] 
+                iam.PolicyStatement(
+                    actions=["cloudwatch:GetMetricData"],
+                    resources=["*"],
+                )
+            ] 
 
         # Pipeline code goes here
         pipeline = pipelines.CodePipeline(
