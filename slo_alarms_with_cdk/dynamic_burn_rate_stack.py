@@ -32,9 +32,10 @@ class DynamicBurnRateStack(Construct):
             initial_policy=role_policy_statements
         )
 
-        high_br_scheduler = events.Rule(
-            self, "HighBrScheduler",
-            schedule=events.Schedule.rate(sched_rates['high'])
-        )
-        high_br_scheduler.add_target(targets.LambdaFunction(update_thresh))
+        for rate in sched_rates.keys():
+            high_br_scheduler = events.Rule(
+                self, rate.capitalize() + "BrScheduler",
+                schedule=events.Schedule.rate(sched_rates[rate])
+            )
+            high_br_scheduler.add_target(targets.LambdaFunction(update_thresh))
 
