@@ -7,6 +7,7 @@ ssm_client = boto3.client('ssm')
 
 def lambda_handler(event, context):
 
+    # retrive env vars and deduce the relevant alarms from the scheduled event
     namespace = os.environ['NAMESPACE']
     SLOtype = os.environ['SLO_TYPE']
     alarm_name_prefix = "-".join([namespace, SLOtype, 'SLO'])
@@ -74,10 +75,8 @@ def lambda_handler(event, context):
     n_a = max(1, sum(req_count['MetricDataResults'][0]['Values'])) # to prevent division by zero in case n_a = 0
     # assuming that n_slo is very large, n_a = 1 will result in desired threshold >> 1
 
-    # extract n_slo
-    n_slo_param = ssm_client.get_parameter(Name=os.environ['SSM_PARAM_NAME'])
-    n_slo = float(n_slo_param['Parameter']['Value'])
-
+    # get n_slo and slo
+    n_slo = float(os.environ['N_SLO'])
     slo = float(os.environ['SLO'])
 
     # keys need to be removed before return the described alarms json to put_metric_alarm:

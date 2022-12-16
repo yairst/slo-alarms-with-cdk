@@ -129,41 +129,31 @@ class SloAlarmsWithCdkStack(Stack):
             self.composite_alarms[br] = self.create_composite_alarm(br, SLO)
 
         if br_type == 'dynamic':
-            # read Nslo metric from metrics.yaml
+            # read Nslo metric from metrics.yaml, to be used in get_n_slo()
             self.n_slo_metric = metrics_cfg['Nslo'][self.namespace]
 
             # get number of requests for the last SLO period - Nslo
             n_slo = self.get_n_slo()
-
-            # create SSM parameter with Nslo as value
-            dim_str = self.dict_to_valid_ssm_parameter_name(self.dimensions_map)
-            param_name = '/'.join(['/SloPeriodRequestCount', self.namespace[4:], dim_str])
-            if "DeployWithoutPipeline" in self.artifact_id:
-                param_name = '/test' + param_name
-            n_slo_param = ssm.StringParameter(self, "SloPeriodRequestCount",
-                parameter_name=param_name,
-                string_value=str(n_slo)
-            )
 
             # create lambda with scheduler to periodically update the threshold
             env_vars = {
                 'NAMESPACE': self.namespace,
                 'SLO_TYPE': self.SLOtype,
                 'SLO': str(SLO[0]),
+                'N_SLO': str(n_slo),
                 'HIGH_BR_ERR_BUDGET_PER': str(br_cfg['high']['ErrBudgetPer']),
                 'MID_BR_ERR_BUDGET_PER': str(br_cfg['mid']['ErrBudgetPer']),
                 'LOW_BR_ERR_BUDGET_PER': str(br_cfg['low']['ErrBudgetPer']),
                 'TEST': 'false',
                 'REQUEST_COUNT_METRIC_NAME': self.n_slo_metric['metric_name'],
                 'REQUEST_COUNT_STAT': self.n_slo_metric['statistic'],
-                'SSM_PARAM_NAME': n_slo_param.parameter_name
             }
             if "DeployWithoutPipeline" in self.artifact_id:
                 env_vars['TEST'] = 'true'
             sched_rates = {
-                'high': Duration.minutes(br_cfg['high']['ShortWin']),
-                'mid': Duration.minutes(br_cfg['mid']['ShortWin']),
-                'low': Duration.minutes(br_cfg['low']['ShortWin'])
+                'High': Duration.minutes(br_cfg['high']['ShortWin']),
+                'Mid': Duration.minutes(br_cfg['mid']['ShortWin']),
+                'Low': Duration.minutes(br_cfg['low']['ShortWin'])
             }
             DynamicBurnRateStack(
                 self, "DynamicBurnRateStack",
@@ -354,9 +344,3 @@ class SloAlarmsWithCdkStack(Stack):
             cur = {"Name": k, "Value": v}
             dim_l.append(cur)
         return dim_l
-
-    def dict_to_valid_ssm_parameter_name(self, d):
-        s = json.dumps(d)
-        s = re.sub(r'[{}" ]', "", s)
-        s = re.sub(r'[:/]', "-", s).replace(",","/")
-        return s
