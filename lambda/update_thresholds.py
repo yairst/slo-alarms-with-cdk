@@ -3,7 +3,6 @@ import time
 import os
 
 cw_client = boto3.client('cloudwatch')
-ssm_client = boto3.client('ssm')
 
 def lambda_handler(event, context):
 

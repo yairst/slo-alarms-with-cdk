@@ -135,29 +135,41 @@ class SloAlarmsWithCdkStack(Stack):
             # get number of requests for the last SLO period - Nslo
             n_slo = self.get_n_slo()
 
-            # create lambda with scheduler to periodically update the threshold
-            env_vars = {
+            # define required inputs for the dynamic burn-rate stack
+            common_env_vars = {
                 'NAMESPACE': self.namespace,
                 'SLO_TYPE': self.SLOtype,
-                'SLO': str(SLO[0]),
-                'N_SLO': str(n_slo),
-                'HIGH_BR_ERR_BUDGET_PER': str(br_cfg['high']['ErrBudgetPer']),
-                'MID_BR_ERR_BUDGET_PER': str(br_cfg['mid']['ErrBudgetPer']),
-                'LOW_BR_ERR_BUDGET_PER': str(br_cfg['low']['ErrBudgetPer']),
                 'TEST': 'false',
                 'REQUEST_COUNT_METRIC_NAME': self.n_slo_metric['metric_name'],
                 'REQUEST_COUNT_STAT': self.n_slo_metric['statistic'],
             }
             if "DeployWithoutPipeline" in self.artifact_id:
-                env_vars['TEST'] = 'true'
+                common_env_vars['TEST'] = 'true'
+
+            update_thresh_env_vars = {
+                'SLO': str(SLO[0]),
+                'N_SLO': str(n_slo),
+                'HIGH_BR_ERR_BUDGET_PER': str(br_cfg['high']['ErrBudgetPer']),
+                'MID_BR_ERR_BUDGET_PER': str(br_cfg['mid']['ErrBudgetPer']),
+                'LOW_BR_ERR_BUDGET_PER': str(br_cfg['low']['ErrBudgetPer']),
+            }
+            update_thresh_env_vars.update(common_env_vars)
+
+            update_n_slo_env_vars = {
+                'SLO_PERIOD': str(self.slo_period)
+            }
+            update_n_slo_env_vars.update(common_env_vars)
+
             sched_rates = {
                 'High': Duration.minutes(br_cfg['high']['ShortWin']),
                 'Mid': Duration.minutes(br_cfg['mid']['ShortWin']),
                 'Low': Duration.minutes(br_cfg['low']['ShortWin'])
             }
+
             DynamicBurnRateStack(
                 self, "DynamicBurnRateStack",
-                env_vars=env_vars,
+                update_thresh_env_vars=update_thresh_env_vars,
+                update_n_slo_env_vars=update_n_slo_env_vars,
                 sched_rates=sched_rates
             )
 
@@ -326,7 +338,7 @@ class SloAlarmsWithCdkStack(Stack):
     				    "MetricName": self.n_slo_metric['metric_name'],
     				    "Dimensions": self.dimensions_dict_to_list()
     			    },
-    			    "Period": 3600,
+    			    "Period": 3600 * 24,
     			    "Stat": self.n_slo_metric['statistic']
     		    },
     		    "ReturnData": True,
