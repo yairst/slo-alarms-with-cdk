@@ -60,6 +60,9 @@ class SloAlarmsPipelineStack(Stack):
         # Need to define each severity as different step, since defining all the tagging
         # in one step, with four different commands for each severity, results in "Rate exceeded"
         # error message for 3 of the four api calls.
+        ###
+        # Moreover, the tagging must be as post stage since alarm doesn't have tag
+        # as part of its properties.
         sevs = ['CRITICAL', 'MINOR', 'WARNING', 'INFO']
         steps_seq = []
         for sev in sevs:

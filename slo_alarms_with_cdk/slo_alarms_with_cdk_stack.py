@@ -161,9 +161,9 @@ class SloAlarmsWithCdkStack(Stack):
             update_n_slo_env_vars.update(common_env_vars)
 
             sched_rates = {
-                'High': Duration.minutes(br_cfg['high']['ShortWin']),
-                'Mid': Duration.minutes(br_cfg['mid']['ShortWin']),
-                'Low': Duration.minutes(br_cfg['low']['ShortWin'])
+                'High': br_cfg['high']['ShortWin'],
+                'Mid': br_cfg['mid']['ShortWin'],
+                'Low': br_cfg['low']['ShortWin']
             }
 
             DynamicBurnRateStack(
