@@ -47,10 +47,15 @@ class DynamicBurnRateStack(Construct):
                 actions=[
                     "cloudwatch:GetMetricData",
                     "cloudwatch:DescribeAlarms",
+                ],
+                resources=["*"],
+            ),
+            iam.PolicyStatement(
+                actions=[
                     "lambda:GetFunctionConfiguration",
                     "lambda:UpdateFunctionConfiguration" 
                 ],
-                resources=["*"],
+                resources=[update_thresh.function_arn],
             )
         ]
 
