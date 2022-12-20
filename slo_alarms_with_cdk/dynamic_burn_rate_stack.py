@@ -18,7 +18,8 @@ class DynamicBurnRateStack(Construct):
                 actions=[
                     "cloudwatch:GetMetricData",
                     "cloudwatch:DescribeAlarms",
-                    "cloudwatch:PutMetricAlarm",  
+                    "cloudwatch:PutMetricAlarm",
+                    "cloudwatch:PutCompositeAlarm"  
                 ],
                 resources=["*"],
             )

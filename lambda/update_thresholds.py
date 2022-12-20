@@ -1,6 +1,7 @@
 import boto3
 import time
 import os
+import re
 
 cw_client = boto3.client('cloudwatch')
 
@@ -22,14 +23,21 @@ def lambda_handler(event, context):
 
     if os.environ['TEST'] == 'true':
         alarm_name_prefix = 'test-' + alarm_name_prefix
-    alarms = cw_client.describe_alarms(AlarmNamePrefix=alarm_name_prefix)
-    # should return one composite alarms and 2 metric alarms. we need only the metric ones:
-    alarms = alarms['MetricAlarms']
+    alarms = cw_client.describe_alarms(
+        AlarmNamePrefix=alarm_name_prefix,
+        AlarmTypes=[
+            'CompositeAlarm',
+            'MetricAlarm'
+        ]
+    )
+    # should return one composite alarms and 2 metric alarms:
+    metric_alarms = alarms['MetricAlarms']
+    comp_alarm = alarms['CompositeAlarms'][0]
 
     # extract the periods and dimensions of the alarms. to do it we need to
     # check if they are single metric alarms or based on math expression - 
     # can be done by check if MetricName field exists: if yes they are single metric alarm.
-    for alarm in alarms:
+    for alarm in metric_alarms:
         if 'MetricName' in alarm.keys(): # single metric alarm
             if 'Long' in alarm['AlarmName']:
                 long_win = alarm['Period']
@@ -78,29 +86,60 @@ def lambda_handler(event, context):
     n_slo = float(os.environ['N_SLO'])
     slo = float(os.environ['SLO'])
 
+    # calculate new threshold. In case of latency SLO caculate also the new statistic
+    new_thresh = round(n_slo / n_a * (eb_per_thresh / 100) * (1 - slo / 100), 5)
+    if SLOtype == 'Latency':
+        new_thresh_perc = min(100, round(100 * new_thresh, 2))
+        percentile = 100 - new_thresh_perc
+        new_statistic = 'p' + "{:05.2f}".format(percentile)
+
     # keys need to be removed before return the described alarms json to put_metric_alarm:
     keys_to_exclude = [
     'AlarmArn', 'AlarmConfigurationUpdatedTimestamp',
     'StateValue', 'StateReason', 'StateReasonData', 'StateUpdatedTimestamp',
     ]
 
-    for alarm in alarms:
-        for k in keys_to_exclude:
-            alarm.pop(k)
-        new_thresh = n_slo / n_a * (eb_per_thresh / 100) * (1 - slo / 100)
+    # Update metric alarms' threshold in case of error-rate SLO or statistic
+    # in case of latency SLO in case that they are different from the exisiting one.
+    update_comp_alarm = False
+    for alarm in metric_alarms:
+        alarm = {k: v for k, v in alarm.items() if k not in keys_to_exclude}
         if SLOtype == 'ErrorRate':
             if alarm['Threshold'] != new_thresh:
                 alarm['Threshold'] = new_thresh
                 cw_client.put_metric_alarm(**alarm)        
         else: # latency
-            percentile = max([0, 100 * (1 - new_thresh)])
-            new_statistic = 'p' + "{:05.2f}".format(percentile)
             if 'MetricName' in alarm.keys(): # single metric alarm
                 if alarm['ExtendedStatistic'] != new_statistic:
                     alarm['ExtendedStatistic'] = new_statistic
                     cw_client.put_metric_alarm(**alarm)
+                    update_comp_alarm = True
             else: # math expression alarm
                 if alarm['Metrics'][0]['MetricStat']['Stat'] != new_statistic:
                     for i in len(alarm['Metrics']):
                         alarm['Metrics'][i]['MetricStat']['Stat'] = new_statistic
                     cw_client.put_metric_alarm(**alarm)
+                    update_comp_alarm = True
+
+    # In case of latency SLO and if the new statistic is different from the existing one
+    # update the description on the composite alarm
+    if update_comp_alarm:
+        keys_to_exclude_comp = keys_to_exclude + [
+            'StateTransitionedTimestamp', 'ActionsSuppressedBy',
+            'ActionsSuppressedReason'
+        ]
+        comp_alarm = {
+            k: v for k, v in comp_alarm.items()
+            if k not in keys_to_exclude_comp
+        }
+        if new_thresh_perc == 100:
+            new_desc = re.sub(r'^.*%', "All", comp_alarm['AlarmDescription'])
+        else:
+            prefix = " ".join([
+                'More than',
+                str(new_thresh_perc),
+                '% of the requests in',
+            ])
+            new_desc = re.sub(r'^.*requests in', prefix, comp_alarm['AlarmDescription'])
+        comp_alarm['AlarmDescription'] = new_desc
+        cw_client.put_composite_alarm(**comp_alarm)
