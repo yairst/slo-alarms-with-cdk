@@ -25,8 +25,10 @@ SloAlarmsPipelineStack(app, "SloAlarmsPipelineStack",
 
     # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
     )
+
 # add stage for quick test without triggering the pipeline, especially for changing
 # values in config.yaml and test the resulting resources without messes up git history
 # ref. to this solution: https://www.youtube.com/watch?v=v9lhX0tAgjY
-SloAlarmsPipelineStage(app, "DeployWithoutPipeline")
+# to use: uncomment the line below and run cdk deploy -a cdk.out/assembly-DeployWithoutPipeline/
+# SloAlarmsPipelineStage(app, "DeployWithoutPipeline")
 app.synth()
