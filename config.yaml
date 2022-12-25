@@ -2,6 +2,11 @@
 # choose the burn rate type: 'static' or 'dynamic'
 br_type: 'dynamic'
 
+# GitHub Connection details:
+owner: OWNER
+repo: REPO
+branch: BRANCH
+
 # Enter the desired SLO as a list. For error rate SLOs this should be a single elemnt list with percentage,
 # usually between 99 to 99.999. For latency SLOs this should be a two element list. For example,
 # for the SLO specification: "90% of the requests should be with latency less than 200 ms" the list

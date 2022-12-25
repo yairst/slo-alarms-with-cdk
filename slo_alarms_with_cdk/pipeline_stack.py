@@ -20,12 +20,14 @@ class SloAlarmsPipelineStack(Stack):
             "slo-alarms-connection-arn"
             ).string_value
 
-        # in case of dynamic burn rate we need to give the Synth stage in the pipeline
-        # permission to call GetMetricData to get the total request count for the SLO period.
+        # extract relevant parameters from config.yaml
         with open('config.yaml', mode='rb') as f:
             cfg = yaml.safe_load(f)
-        br_type = cfg['br_type']
-        if br_type == 'static':
+
+        # in case of dynamic burn rate we need to give the Synth stage in the pipeline
+        # permission to call GetMetricData to get the total request count for the SLO period.
+
+        if cfg['br_type'] == 'static':
             role_policy_statements = None
         else:
             role_policy_statements = [
@@ -41,8 +43,9 @@ class SloAlarmsPipelineStack(Stack):
             "Pipeline",
             synth=pipelines.CodeBuildStep(
                 "Synth",
-                input=pipelines.CodePipelineSource.connection('yairst/slo-alarms-with-cdk', 'main',
-                connection_arn=connection_arn
+                input=pipelines.CodePipelineSource.connection(
+                    '/'.join([cfg['owner'], cfg['repo']]), cfg['branch'],
+                    connection_arn=connection_arn
                 ),
                 commands=[
                     "npm install -g aws-cdk",  # Installs the cdk cli on Codebuild

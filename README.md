@@ -96,6 +96,8 @@ dimensions_map:
 
 5. If you are On windows replace `python3` with `python` in `cdk.json`.
 
+5. Edit `config.yaml` with your desired values as detailed in the comments in the file. In particular, replace the values of the GitHub section with your forked repo ones, and specify your service, dimensions and SLO.
+
 5. Synthesize (`cdk synth`) or deploy (`cdk deploy`) the example
 
     ```
