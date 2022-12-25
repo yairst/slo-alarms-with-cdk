@@ -51,7 +51,55 @@ dimensions_map:
 ```
 ## How to Use
 
-1. Follow the instructions in [Working with the AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/work-with.html). Of course refer to the [Python prerequisites](https://docs.aws.amazon.com/cdk/v2/guide/work-with-cdk-python.html).
-2. Clone this repo.
-3. activate the virtualenv and install the required dependencies as deatiled in [CDK_README.md](CDK_README.md).
-4. run `cdk deploy`.
+1. Follow the instructions in [Working with the AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/work-with.html). At the *Language-specific prerequisites* section in the above link choose [Python prerequisites](https://docs.aws.amazon.com/cdk/v2/guide/work-with-cdk-python.html) and there follow the instructions only in the prerequisites section.
+
+2. Fork this repo
+
+3. Clone your forked repo:
+    ```
+    git clone git@github.com:<your_username>/slo-alarms-with-cdk.git
+    ```
+2. Create a Python virtual environment
+
+    _On MacOS or Linux_
+    ```
+    $ python3 -m venv .venv
+    ```
+
+    _On Windows_
+    ```
+    $ python -m venv .venv
+    ```
+
+3. Activate virtual environment
+
+    _On MacOS or Linux_
+    ```
+    $ source .venv/bin/activate
+    ```
+
+    _On Windows_
+    ```
+    % .venv\Scripts\activate.bat
+    ```
+
+    _On Windows, using Git Bash_ (as suggested [here](https://stackoverflow.com/questions/50902497/how-to-tell-if-virtualenv-is-activated-in-windows-git-bash))
+    ```
+    $ source .venv/Scripts/activate
+    ```    
+
+4. Install the required dependencies.
+
+    ```
+    $ pip install -r requirements.txt
+    ```
+
+5. If you are On windows replace `python3` with `python` in `cdk.json`.
+
+5. Synthesize (`cdk synth`) or deploy (`cdk deploy`) the example
+
+    ```
+    $ cdk deploy
+    ```
+6. If you want to fetch future changes from this repo, follow the steps [here](https://stackoverflow.com/questions/7244321/how-do-i-update-or-sync-a-forked-repository-on-github) or in [section 6 here](https://gist.github.com/0xjac/85097472043b697ab57ba1b1c7530274).
+

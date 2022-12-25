@@ -6,6 +6,7 @@ __pycache__
 *.egg-info
 explore
 TODO
+notes.md
 
 # CDK asset staging directory
 .cdk.staging
