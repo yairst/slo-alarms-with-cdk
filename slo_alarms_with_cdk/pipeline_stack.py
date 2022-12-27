@@ -6,9 +6,7 @@ from aws_cdk import (
 )
 from slo_alarms_with_cdk.pipeline_stage import SloAlarmsPipelineStage
 import yaml
-import boto3
 
-csc_client = boto3.client('codestar-connections')
 
 class SloAlarmsPipelineStack(Stack):
     
