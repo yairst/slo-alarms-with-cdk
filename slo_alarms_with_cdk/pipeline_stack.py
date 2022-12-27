@@ -2,23 +2,18 @@ from constructs import Construct
 from aws_cdk import (
     Stack,
     pipelines,
-    aws_ssm as ssm,
     aws_iam as iam,
 )
 from slo_alarms_with_cdk.pipeline_stage import SloAlarmsPipelineStage
 import yaml
+import boto3
+
+csc_client = boto3.client('codestar-connections')
 
 class SloAlarmsPipelineStack(Stack):
     
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
-
-        # get github connection arn from parameter store
-        connection_arn = ssm.StringParameter.from_string_parameter_name(
-            self,
-            "ConnectionARN",
-            "slo-alarms-connection-arn"
-            ).string_value
 
         # extract relevant parameters from config.yaml
         with open('config.yaml', mode='rb') as f:
@@ -45,7 +40,7 @@ class SloAlarmsPipelineStack(Stack):
                 "Synth",
                 input=pipelines.CodePipelineSource.connection(
                     '/'.join([cfg['owner'], cfg['repo']]), cfg['branch'],
-                    connection_arn=connection_arn
+                    connection_arn=cfg['connection_arn']
                 ),
                 commands=[
                     "npm install -g aws-cdk",  # Installs the cdk cli on Codebuild

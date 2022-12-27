@@ -3,6 +3,7 @@
 br_type: 'dynamic'
 
 # GitHub Connection details:
+connection_arn: CONNECTION_ARN
 owner: OWNER
 repo: REPO
 branch: BRANCH

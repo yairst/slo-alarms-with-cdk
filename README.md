@@ -51,7 +51,7 @@ dimensions_map:
 ```
 ## How to Use
 
-1. Follow the instructions in [Working with the AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/work-with.html). At the *Language-specific prerequisites* section in the above link choose [Python prerequisites](https://docs.aws.amazon.com/cdk/v2/guide/work-with-cdk-python.html) and there follow the instructions only in the prerequisites section.
+1. Follow the instructions in [Working with the AWS CDK](https://docs.aws.amazon.com/cdk/v2/guide/work-with.html). At the *Language-specific prerequisites* section, in the above link, choose [Python prerequisites](https://docs.aws.amazon.com/cdk/v2/guide/work-with-cdk-python.html), and there follow the instructions only in the prerequisites section.
 
 2. Fork this repo
 
@@ -96,12 +96,18 @@ dimensions_map:
 
 5. If you are On windows replace `python3` with `python` in `cdk.json`.
 
-5. Edit `config.yaml` with your desired values as detailed in the comments in the file. In particular, replace the values of the GitHub section with your forked repo ones, and specify your service, dimensions and SLO.
+6. [Create a connection to GitHub](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections-create-github.html) using AWS console or CLI.
+
+7. Edit `config.yaml` as following:
+    - Choose burn rate type: static or dynamic.
+    - Replace the values of the GitHub section with your forked repo ones.
+    - Specify your service, dimensions and SLO.
 
 5. Synthesize (`cdk synth`) or deploy (`cdk deploy`) the example
 
     ```
     $ cdk deploy
     ```
+    After first `cdk deploy` [the pipeline will automatically updates itself on every push](https://docs.aws.amazon.com/cdk/v2/guide/cdk_pipeline.html#:~:text=push%0Acdk%20deploy-,Tip,-Now%20that%20you%27ve).
 6. If you want to fetch future changes from this repo, follow the steps [here](https://stackoverflow.com/questions/7244321/how-do-i-update-or-sync-a-forked-repository-on-github) or in [section 6 here](https://gist.github.com/0xjac/85097472043b697ab57ba1b1c7530274).
 
