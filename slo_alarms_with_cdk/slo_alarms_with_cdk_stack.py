@@ -1,7 +1,6 @@
 from aws_cdk import (
     Stack,
     aws_cloudwatch as cw,
-    aws_ssm as ssm,
     aws_sns as sns,
     aws_cloudwatch_actions as cw_actions,
     Duration
@@ -11,7 +10,6 @@ import yaml
 import json
 import boto3
 import time
-import re
 from .dynamic_burn_rate_stack import DynamicBurnRateStack
 
 cw_client = boto3.client('cloudwatch')
@@ -57,13 +55,22 @@ class SloAlarmsWithCdkStack(Stack):
             if alarm_type == 'math':
                 self.metrics_dict = self.get_metrics_for_math_expresssion()
 
-        # get the SNS topic ARN for the action to be triggered by the composite alarms
-        sns_topic_arn = ssm.StringParameter.from_string_parameter_name(
-            self,
-            "SnsTopicARN",
-            "sns-topic-for-slo-alarms"
-            ).string_value
-        self.topic = sns.Topic.from_topic_arn(self, "SloAlarmsTopic", sns_topic_arn)
+        # create SNS topic which be triggered by the composite alarms
+        topic_name = "slo-alarms-topic"
+        if "DeployWithoutPipeline" in self.artifact_id:
+            topic_name = 'test' + topic_name
+        self.topic = sns.Topic(self, "SloAlarmsTopic", topic_name=topic_name)
+        if cfg['subscriptions'] is not None:
+            for s in cfg['subscriptions']:
+                if s['protocol'] == 'FIREHOSE':
+                    subscription_role_arn = s['subscription_role_arn']
+                else:
+                    subscription_role_arn = None
+                sns.Subscription(
+                    self, "Subscription", topic=self.topic,
+                    endpoint=s['endpoint'], protocol=s['protocol'],
+                    subscription_role_arn=subscription_role_arn
+                )
 
         # create constant part of the alarms arns
         account_id = Stack.of(self).account

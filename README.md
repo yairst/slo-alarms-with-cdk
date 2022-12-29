@@ -101,6 +101,7 @@ dimensions_map:
 7. Edit `config.yaml` as following:
     - Choose burn rate type: static or dynamic.
     - Replace the values of the GitHub section with your forked repo ones.
+    - Replace the subscriptions list with your subscriptions or delete it if you don't want any subscriptions for the SNS topic which triggered when the alarms go into IN ALARM state. Note that for firehose subscription protocol, you need to specifiy the arn of the role allowing access to firehose delivery stream, assuming both the firehose delivery stream and the IAM role are already exist.
     - Specify your service, dimensions and SLO.
 
 5. Synthesize (`cdk synth`) or deploy (`cdk deploy`) the example
