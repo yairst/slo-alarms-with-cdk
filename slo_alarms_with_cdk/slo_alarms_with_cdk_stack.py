@@ -61,14 +61,15 @@ class SloAlarmsWithCdkStack(Stack):
             topic_name = 'test' + topic_name
         self.topic = sns.Topic(self, "SloAlarmsTopic", topic_name=topic_name)
         if cfg['subscriptions'] is not None:
-            for s in cfg['subscriptions']:
+            for i, s in enumerate(cfg['subscriptions']):
                 if s['protocol'] == 'FIREHOSE':
                     subscription_role_arn = s['subscription_role_arn']
                 else:
                     subscription_role_arn = None
+                protocol = sns.SubscriptionProtocol(s['protocol'])
                 sns.Subscription(
-                    self, "Subscription", topic=self.topic,
-                    endpoint=s['endpoint'], protocol=s['protocol'],
+                    self, "Subscription" + str(i), topic=self.topic,
+                    endpoint=s['endpoint'], protocol=protocol,
                     subscription_role_arn=subscription_role_arn
                 )
 
