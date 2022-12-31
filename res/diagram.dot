@@ -1,0 +1,485 @@
+digraph "Diagram" {
+  splines = "ortho";
+  pad = "1.0";
+  nodesep = "0.60";
+  ranksep = "0.75";
+  fontname = "Sans-Serif";
+  fontsize = "15";
+  dpi = "200";
+  rankdir = "BT";
+  compound = "true";
+  fontcolor = "#222222";
+  edge [
+    color = "#D5871488",
+    penwidth = 2,
+    arrowhead = "dot",
+    arrowtail = "dot",
+  ];
+  node [
+    shape = "box",
+    style = "rounded",
+    fixedsize = true,
+    width = 1.7,
+    height = 1.7,
+    labelloc = "c",
+    imagescale = true,
+    fontname = "Sans-Serif",
+    fontsize = 8,
+    margin = 8,
+  ];
+  subgraph "SloAlarmsPipelineStack" {
+    subgraph "cluster-SubGraph.SloAlarmsPipelineStack" {
+      graph [
+        label = "SloAlarmsPipelineStack",
+        labelloc = "b",
+        labeljust = "l",
+        margin = "10",
+        fontsize = "16",
+        penwidth = "2",
+        pencolor = "#888888",
+        style = "filled,rounded",
+        fillcolor = "#e4e4e4",
+      ];
+      subgraph "cluster-SubGraph.Pipeline" {
+        graph [
+          label = "Pipeline",
+          labelloc = "b",
+          labeljust = "l",
+          margin = "10",
+          fontsize = "16",
+          penwidth = "2",
+          pencolor = "#888888",
+          style = "filled,rounded",
+          fillcolor = "#d6d6d6",
+        ];
+        "SloAlarmsPipelineStack/Pipeline/Pipeline" [
+          label = " Pipeline",
+          fontsize = 12,
+          image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Developer- Tools/64/Arch_AWS-CodePipeline_64@5x.png",
+          imagescale = "true",
+          imagepos = "tc",
+          penwidth = "0",
+          shape = "node",
+          fixedsize = "true",
+          labelloc = "b",
+          width = 1.2,
+          height = 1.466,
+        ];
+        "SloAlarmsPipelineStack/Pipeline/CodeBuildActionRole" [
+          label = " CodeBuildActionRole",
+          fontsize = 12,
+          image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Security-Identity-Compliance/64/Arch_AWS-Identity-and-Access-Management_64@5x.png",
+          imagescale = "true",
+          imagepos = "tc",
+          penwidth = "0",
+          shape = "node",
+          fixedsize = "true",
+          labelloc = "b",
+          width = 1.2,
+          height = 1.466,
+        ];
+        "SloAlarmsPipelineStack/Pipeline/UpdatePipeline/SelfMutation" [
+          label = " SelfMutation",
+          fontsize = 12,
+          image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Developer- Tools/64/Arch_Amazon-CodeBuild_64@5x.png",
+          imagescale = "true",
+          imagepos = "tc",
+          penwidth = "0",
+          shape = "node",
+          fixedsize = "true",
+          labelloc = "b",
+          width = 1.2,
+          height = 1.466,
+        ];
+        subgraph "cluster-SubGraph.Assets" {
+          graph [
+            label = "Assets",
+            labelloc = "b",
+            labeljust = "l",
+            margin = "10",
+            fontsize = "16",
+            penwidth = "2",
+            pencolor = "#888888",
+            style = "filled,rounded",
+            fillcolor = "#c7c7c7",
+          ];
+          "SloAlarmsPipelineStack/Pipeline/Assets/FileRole" [
+            label = " FileRole",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Security-Identity-Compliance/64/Arch_AWS-Identity-and-Access-Management_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 1.2,
+            height = 1.466,
+          ];
+          "SloAlarmsPipelineStack/Pipeline/Assets/FileAsset1" [
+            label = " FileAsset1",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Developer- Tools/64/Arch_Amazon-CodeBuild_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 1.2,
+            height = 1.466,
+          ];
+        }
+      }
+      subgraph "cluster-SubGraph.Deploy" {
+        graph [
+          label = "Deploy",
+          labelloc = "b",
+          labeljust = "l",
+          margin = "10",
+          fontsize = "16",
+          penwidth = "2",
+          pencolor = "#888888",
+          style = "filled,rounded",
+          fillcolor = "#d6d6d6",
+        ];
+        subgraph "cluster-SubGraph.SloAlarmsStack" {
+          graph [
+            label = "SloAlarmsStack",
+            labelloc = "b",
+            labeljust = "l",
+            margin = "10",
+            fontsize = "16",
+            penwidth = "2",
+            pencolor = "#888888",
+            style = "filled,rounded",
+            fillcolor = "#c7c7c7",
+          ];
+          "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/SloAlarmsTopic" [
+            label = " SloAlarmsTopic",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_App-Integration/Arch_64/Arch_AWS-Simple-Notification-Service_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 2,
+            height = 2.266,
+          ];
+          "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/Subscriptions" [
+            label = " Subscriptions",
+            fontsize = 12,
+          ];
+
+          "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOhighBurnRateLongWin" [
+            label = "highBRLongWin",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Management-Governance/64/Arch_Amazon-CloudWatch_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 1.2,
+            height = 1.682,
+          ];
+          "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOhighBurnRateShortWin" [
+            label = "highBRShortWin",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Management-Governance/64/Arch_Amazon-CloudWatch_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 1.2,
+            height = 1.682,
+          ];
+          "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOhighBurnRate" [
+            label = "highBR",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Management-Governance/64/Arch_Amazon-CloudWatch_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 1.8,
+            height = 2.0394,
+          ];
+          "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOmidBurnRateLongWin" [
+            label = "midBRLongWi",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Management-Governance/64/Arch_Amazon-CloudWatch_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 1.2,
+            height = 1.682,
+          ];
+          "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOmidBurnRateShortWin" [
+            label = "midBRShortWin",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Management-Governance/64/Arch_Amazon-CloudWatch_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 1.2,
+            height = 1.682,
+          ];
+          "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOmidBurnRate" [
+            label = "midBR",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Management-Governance/64/Arch_Amazon-CloudWatch_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 1.8,
+            height = 2.0394,
+          ];
+          "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOlowBurnRateLongWin" [
+            label = "lowBRLongWin",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Management-Governance/64/Arch_Amazon-CloudWatch_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 1.2,
+            height = 1.682,
+          ];
+          "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOlowBurnRateShortWin" [
+            label = "lowBRShortWin",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Management-Governance/64/Arch_Amazon-CloudWatch_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 1.2,
+            height = 1.682,
+          ];
+          "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOAuxiliaryMidOrHighSuppresorAlarm" [
+            label = "MidOrHighSuppresor",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Management-Governance/64/Arch_Amazon-CloudWatch_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 1.2,
+            height = 1.682,
+          ];
+          "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOlowBurnRate" [
+            label = "lowBR",
+            fontsize = 12,
+            image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Management-Governance/64/Arch_Amazon-CloudWatch_64@5x.png",
+            imagescale = "true",
+            imagepos = "tc",
+            penwidth = "0",
+            shape = "node",
+            fixedsize = "true",
+            labelloc = "b",
+            width = 1.8,
+            height = 2.0394,
+          ];
+          subgraph "cluster-SubGraph.DynamicBurnRateStack" {
+            graph [
+              label = "DynamicBurnRateStack",
+              labelloc = "b",
+              labeljust = "l",
+              margin = "10",
+              fontsize = "16",
+              penwidth = "2",
+              pencolor = "#888888",
+              style = "filled,rounded",
+              fillcolor = "#b9b9b9",
+            ];
+            "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/UpdateThresholds" [
+              label = " UpdateThresholds",
+              fontsize = 12,
+              image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Compute/64/Arch_AWS-Lambda_64@5x.png",
+              imagescale = "true",
+              imagepos = "tc",
+              penwidth = "0",
+              shape = "node",
+              fixedsize = "true",
+              labelloc = "b",
+              width = 2,
+              height = 2.266,
+            ];
+            "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/UpdateNslo" [
+              label = " UpdateNslo",
+              fontsize = 12,
+              image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_Compute/64/Arch_AWS-Lambda_64@5x.png",
+              imagescale = "true",
+              imagepos = "tc",
+              penwidth = "0",
+              shape = "node",
+              fixedsize = "true",
+              labelloc = "b",
+              width = 2,
+              height = 2.266,
+            ];
+            "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/OnceEvery3MinutesScheduler" [
+              label = "3MinutesSched",
+              fontsize = 12,
+              image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_App-Integration/Arch_64/Arch_Amazon-EventBridge_64@5x.png",
+              imagescale = "true",
+              imagepos = "tc",
+              penwidth = "0",
+              shape = "node",
+              fixedsize = "true",
+              labelloc = "b",
+              width = 1.2,
+              height = 1.682,
+            ];
+            "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/OnceEvery15MinutesScheduler" [
+              label = "15MinutesSched",
+              fontsize = 12,
+              image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_App-Integration/Arch_64/Arch_Amazon-EventBridge_64@5x.png",
+              imagescale = "true",
+              imagepos = "tc",
+              penwidth = "0",
+              shape = "node",
+              fixedsize = "true",
+              labelloc = "b",
+              width = 1.2,
+              height = 1.682,
+            ];
+            "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/OnceEvery120MinutesScheduler" [
+              label = "120MinutesSched",
+              fontsize = 12,
+              image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_App-Integration/Arch_64/Arch_Amazon-EventBridge_64@5x.png",
+              imagescale = "true",
+              imagepos = "tc",
+              penwidth = "0",
+              shape = "node",
+              fixedsize = "true",
+              labelloc = "b",
+              width = 1.2,
+              height = 1.682,
+            ];
+            "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/OnceADayScheduler" [
+              label = "OnceADayScheduler",
+              fontsize = 12,
+              image = "/usr/lib/node_modules/cdk-dia/icons/aws/Service/Arch_App-Integration/Arch_64/Arch_Amazon-EventBridge_64@5x.png",
+              imagescale = "true",
+              imagepos = "tc",
+              penwidth = "0",
+              shape = "node",
+              fixedsize = "true",
+              labelloc = "b",
+              width = 1.2,
+              height = 1.466,
+            ];
+          }
+        }
+      }
+    }
+  }
+  "SloAlarmsPipelineStack/Pipeline/Pipeline" -> "SloAlarmsPipelineStack/Pipeline/CodeBuildActionRole" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Pipeline/Pipeline" -> "SloAlarmsPipelineStack/Pipeline/UpdatePipeline/SelfMutation" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Pipeline/Pipeline" -> "SloAlarmsPipelineStack/Pipeline/Assets/FileAsset1" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Pipeline/CodeBuildActionRole" -> "SloAlarmsPipelineStack/Pipeline/Pipeline" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Pipeline/CodeBuildActionRole" -> "SloAlarmsPipelineStack/Pipeline/UpdatePipeline/SelfMutation" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Pipeline/CodeBuildActionRole" -> "SloAlarmsPipelineStack/Pipeline/Assets/FileAsset1" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Pipeline/Assets/FileRole" -> "SloAlarmsPipelineStack/Pipeline/Pipeline" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Pipeline/Assets/FileAsset1" -> "SloAlarmsPipelineStack/Pipeline/Assets/FileRole" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Pipeline/UpdatePipeline/SelfMutation" -> "SloAlarmsPipelineStack/Pipeline/Pipeline" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/Subscriptions" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/SloAlarmsTopic" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOhighBurnRate" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/SloAlarmsTopic" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOhighBurnRate" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOhighBurnRateLongWin" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOhighBurnRate" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOhighBurnRateShortWin" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOmidBurnRate" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/SloAlarmsTopic" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOmidBurnRate" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOhighBurnRate" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOmidBurnRate" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOmidBurnRateLongWin" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOmidBurnRate" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOmidBurnRateShortWin" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOAuxiliaryMidOrHighSuppresorAlarm" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOhighBurnRate" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOAuxiliaryMidOrHighSuppresorAlarm" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOmidBurnRate" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOlowBurnRate" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/SloAlarmsTopic" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOlowBurnRate" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOlowBurnRateLongWin" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOlowBurnRate" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOlowBurnRateShortWin" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOlowBurnRate" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/AWS--ApiGatewayLatencySLOAuxiliaryMidOrHighSuppresorAlarm" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/UpdateNslo" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/UpdateThresholds" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/OnceEvery3MinutesScheduler" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/UpdateThresholds" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/OnceEvery15MinutesScheduler" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/UpdateThresholds" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/OnceEvery120MinutesScheduler" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/UpdateThresholds" [
+    dir = "both",
+  ];
+  "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/OnceADayScheduler" -> "SloAlarmsPipelineStack/Deploy/SloAlarmsStack/DynamicBurnRateStack/UpdateNslo" [
+    dir = "both",
+  ];
+}
