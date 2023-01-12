@@ -6,7 +6,7 @@ A python-based application for deploying  stacks of SLO CloudWatch alarms on AWS
 
 In general, alerts rules defined on web or mobile applications have low precision because of the tendency to define them with relatively low threshold (in purpose not to miss incidents) on short time-windows. These low precision alerts bring quickly to the so called "alert fatigue" phenomenon and eventually to ineffectiveness of the alerts.
 
-In his post, [Alerting on SLOs like Pros](https://developers.soundcloud.com/blog/alerting-on-slos), Björn Rabenstein presents Google's ultimate solution to the above problem which is called *Multiwindow, Multi-Burn-Rate Alerts*. In order to well understand the concepts behind this solution, like SLIs, SLOS, error budget and burn rates, you are encouraged to read this post and preferably Google's sources which is linked in it. To summarize, the definitions of the above terms are:
+In his post, [Alerting on SLOs like Pros](https://developers.soundcloud.com/blog/alerting-on-slos), Björn Rabenstein presents Google's ultimate solution to the above problem which is called *Multiwindow, Multi-Burn-Rate Alerts*. In order to well understand the concepts behind this solution, like SLIs, SLOS, error budget and burn rates, you are encouraged to read this post and preferably Google's sources which are linked in it. To summarize, the definitions of the above terms are:
  - **SLI** - Service Level Indicator: A metric that describes some aspect of the reliability of a service. Defined as the ratio between the number of "good" events to the total number of events. For example, the ratio between the number of all the requests which hasn't been responded with 5xx http-code to the total number of requests. 
  - **SLO** - Service Level Objective. A threshold on a corresponding Service Level Indicator (SLI) aligned with the reliability goal for that SLI. For example, 99.9 % of the events should be non-5xx events.
  - **Error Budget** - The allowed number of "bad" events for pre-defined SLO period. For example, if the SLO is 99.9 % and there are one million requests in the SLO period (say, 28 days), then the error budget is 1,000.
@@ -30,13 +30,13 @@ $$ BurnRate = {SloPeriod \over LongWindow} \times PercentageOfErrorBudgetConsump
 
 For example, the calculation of the 14.4 burn rate is:
 
-$$ {{30 \times 24} \over 1} \times 2 \% = 14.4 $$
+$$ {{30 \times 24} \over 1} \times 2 \\% = 14.4 $$
 
 and then the threshold will be:
 
 $$ Threshold = BurnRate \times (1 - SLO) $$
 
-For example, for 99.9 % SLO the threshold of the 1-hour alert will be: $ 14.4 \times 0.1\% = 1.44\% $
+For example, for 99.9 % SLO the threshold of the 1-hour alert will be: $14.4 \times 0.1\\% = 1.44\\%$
 
 ### Dynamic Burn Rates
 

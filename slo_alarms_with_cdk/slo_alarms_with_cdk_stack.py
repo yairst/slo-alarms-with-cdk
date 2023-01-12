@@ -240,11 +240,8 @@ class SloAlarmsWithCdkStack(Stack):
 
         if self.SLOtype == 'ErrorRate':
             desc = " ".join([
-                'error rate in the last',
-                str(alarm_win),
-                time_unit,
-                ', in', self.namespace, '-',
-                json.dumps(self.dimensions_map)
+                'error rate in the last', str(alarm_win), time_unit,
+                ', in', self.namespace, '-', json.dumps(self.dimensions_map)
             ])
             if br in ['high','mid']:
                 suffix = '.'
@@ -266,21 +263,11 @@ class SloAlarmsWithCdkStack(Stack):
             if thresh >= 100:
                 prefix = 'All of the requests in'
             else:
-                prefix = " ".join([
-                    'More than',
-                    str(thresh),
-                    '% of the requests in',
-                ])
+                prefix = " ".join(['More than', str(thresh), '% of the requests in'])
             desc = " ".join([
-                prefix,
-                self.namespace, '-',
-                json.dumps(self.dimensions_map),
-                'have latency above',
-                str(SLO[1]),
-                latency_time_unit,
-                'in the last',
-                str(alarm_win),
-                time_unit, '.'
+                prefix, self.namespace, '-', json.dumps(self.dimensions_map),
+                'have latency above', str(SLO[1]), latency_time_unit,
+                'in the last', str(alarm_win), time_unit, '.'
             ])
 
         return desc 
