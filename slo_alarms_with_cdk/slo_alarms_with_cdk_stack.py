@@ -20,17 +20,14 @@ class SloAlarmsWithCdkStack(Stack):
     def alarms_arns_by_sev(self):
         return self._alarms_arns_by_sev
 
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    def __init__(
+            self, scope: Construct, construct_id: str, br_cfg: dict, metrics_cfg: dict,
+            cfg: dict, **kwargs
+        ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # read burn rates and windows configuration. DO NOT CHANGE!
-        with open('burn_rates.yaml', mode='rb') as f:
-            br_cfg = yaml.safe_load(f)
+        # initialize class members and varibales
         self.slo_period = br_cfg['SLOperiod']
-
-        # read user's configuration: SLO and metric to alert on
-        with open('config.yaml', mode='rb') as f:
-            cfg = yaml.safe_load(f)
         br_type = cfg['br_type']
         SLO = cfg['SLO']
         self.namespace = cfg['namespace']
@@ -39,10 +36,6 @@ class SloAlarmsWithCdkStack(Stack):
             self.SLOtype = 'Latency'
         else:
             self.SLOtype = 'ErrorRate'
-
-        # read metric configuration
-        with open('metrics.yaml', mode='rb') as f:
-            metrics_cfg = yaml.safe_load(f)
         if 'metric_name' in metrics_cfg[self.SLOtype][self.namespace].keys():
             alarm_type = 'metric'
             self.metric_name = metrics_cfg[self.SLOtype][self.namespace]['metric_name']
@@ -58,7 +51,7 @@ class SloAlarmsWithCdkStack(Stack):
         # create SNS topic which be triggered by the composite alarms
         topic_name = "slo-alarms-topic"
         if "DeployWithoutPipeline" in self.artifact_id:
-            topic_name = 'test' + topic_name
+            topic_name = 'test-' + topic_name
         self.topic = sns.Topic(self, "SloAlarmsTopic", topic_name=topic_name)
         if cfg['subscriptions'] is not None:
             for i, s in enumerate(cfg['subscriptions']):

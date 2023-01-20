@@ -1,5 +1,6 @@
 from constructs import Construct
 from aws_cdk import (
+    Stack,
     aws_lambda as _lambda,
     aws_events as events,
     aws_events_targets as targets,
@@ -7,7 +8,7 @@ from aws_cdk import (
     Duration
 )
 
-class DynamicBurnRateStack(Construct):
+class DynamicBurnRateStack(Stack):
 
     def __init__(self, scope: Construct, id: str,
         update_thresh_env_vars: dict, update_n_slo_env_vars: dict, sched_rates: dict, **kwargs):
@@ -33,6 +34,8 @@ class DynamicBurnRateStack(Construct):
                 'SLO-alarms'
             ]
         )
+        if "DeployWithoutPipeline" in self.artifact_id:
+            update_thresh_name = 'test-' + update_thresh_name
         update_thresh = _lambda.Function(
             self, 'UpdateThresholds',
             runtime=_lambda.Runtime.PYTHON_3_9,
@@ -68,6 +71,8 @@ class DynamicBurnRateStack(Construct):
                 'SLO-alarms'
             ]
         )
+        if "DeployWithoutPipeline" in self.artifact_id:
+            update_n_slo_name = 'test-' + update_n_slo_name
         update_n_slo_env_vars['UPDATE_THRESH_FUNC'] = update_thresh_name
         update_n_slo = _lambda.Function(
             self, 'UpdateNslo',
@@ -81,16 +86,22 @@ class DynamicBurnRateStack(Construct):
 
         for rate, minutes in sched_rates.items():
             duration = Duration.minutes(minutes)
+            rule_name = rate + "BrOnceEvery" + str(minutes) + "MinutesScheduler"
+            if "DeployWithoutPipeline" in self.artifact_id:
+                rule_name = 'test-' + rule_name
             br_scheduler = events.Rule(
                 self, "OnceEvery" + str(minutes) + "MinutesScheduler",
                 schedule=events.Schedule.rate(duration),
-                rule_name=rate + "BrOnceEvery" + str(minutes) + "MinutesScheduler"
+                rule_name=rule_name
             )
             br_scheduler.add_target(targets.LambdaFunction(update_thresh))
-
+        
+        rule_name="OnceADayScheduler"
+        if "DeployWithoutPipeline" in self.artifact_id:
+            rule_name = 'test-' + rule_name
         n_slo_scheduler = events.Rule(
             self, "OnceADayScheduler",
             schedule=events.Schedule.rate(Duration.hours(24)),
-            rule_name="OnceADayScheduler"
+            rule_name=rule_name
         )
         n_slo_scheduler.add_target(targets.LambdaFunction(update_n_slo))

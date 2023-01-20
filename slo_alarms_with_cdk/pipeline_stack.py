@@ -10,12 +10,11 @@ import yaml
 
 class SloAlarmsPipelineStack(Stack):
     
-    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
+    def __init__(
+            self, scope: Construct, id: str, br_cfg: dict, metrics_cfg: dict,
+            cfg: dict, **kwargs
+        ) -> None:
         super().__init__(scope, id, **kwargs)
-
-        # extract relevant parameters from config.yaml
-        with open('config.yaml', mode='rb') as f:
-            cfg = yaml.safe_load(f)
 
         # in case of dynamic burn rate we need to give the Synth stage in the pipeline
         # permission to call GetMetricData to get the total request count for the SLO period.
@@ -50,7 +49,7 @@ class SloAlarmsPipelineStack(Stack):
         )
         
         # define the alarms provision stage
-        deploy = SloAlarmsPipelineStage(self, "Deploy")
+        deploy = SloAlarmsPipelineStage(self, "Deploy", br_cfg, metrics_cfg, cfg)
 
         # define a sequence of post stages for tagging the alarms with severities.
         # Need to define each severity as different step, since defining all the tagging
