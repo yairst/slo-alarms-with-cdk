@@ -6,7 +6,6 @@ from aws_cdk import (
     Duration
 )
 from constructs import Construct
-import yaml
 import json
 import boto3
 import time

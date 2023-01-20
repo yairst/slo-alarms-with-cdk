@@ -1,6 +1,6 @@
 from constructs import Construct
 from aws_cdk import (
-    Stack,
+    NestedStack,
     aws_lambda as _lambda,
     aws_events as events,
     aws_events_targets as targets,
@@ -8,7 +8,7 @@ from aws_cdk import (
     Duration
 )
 
-class DynamicBurnRateStack(Stack):
+class DynamicBurnRateStack(NestedStack):
 
     def __init__(self, scope: Construct, id: str,
         update_thresh_env_vars: dict, update_n_slo_env_vars: dict, sched_rates: dict, **kwargs):
