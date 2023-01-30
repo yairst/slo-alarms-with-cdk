@@ -40,7 +40,7 @@ class DynamicBurnRateStack(NestedStack):
             self, 'UpdateThresholds',
             runtime=_lambda.Runtime.PYTHON_3_9,
             handler='update_thresholds.lambda_handler',
-            code=_lambda.Code.from_asset('lambda'),
+            code=_lambda.Code.from_asset('lambda_funcs'),
             environment=update_thresh_env_vars,
             initial_policy=update_thresh_role_policy_statements,
             function_name=update_thresh_name
@@ -78,7 +78,7 @@ class DynamicBurnRateStack(NestedStack):
             self, 'UpdateNslo',
             runtime=_lambda.Runtime.PYTHON_3_9,
             handler='update_n_slo.lambda_handler',
-            code=_lambda.Code.from_asset('lambda'),
+            code=_lambda.Code.from_asset('lambda_funcs'),
             environment=update_n_slo_env_vars,
             initial_policy=update_n_slo_role_policy_statements,
             function_name=update_n_slo_name

@@ -31,10 +31,7 @@ class SloAlarmsWithCdkStack(Stack):
         SLO = cfg['SLO']
         self.namespace = cfg['namespace']
         self.dimensions_map = cfg['dimensions_map']
-        if len(SLO) == 2:
-            self.SLOtype = 'Latency'
-        else:
-            self.SLOtype = 'ErrorRate'
+        self.SLOtype = cfg['SLOtype']
         if 'metric_name' in metrics_cfg[self.SLOtype][self.namespace].keys():
             alarm_type = 'metric'
             self.metric_name = metrics_cfg[self.SLOtype][self.namespace]['metric_name']
