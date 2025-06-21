@@ -40,7 +40,7 @@ For example, for 99.9 % SLO the threshold of the 1-hour alert will be: $14.4 \ti
 
 ### Dynamic Burn Rates
 
-Google's solution constitutes a significant milestone in the ability to create alerting setup with both high recall and high setup. However, as I show in my [two-part post](https://medium.com/@yairstark/error-budget-is-all-you-need-part-2-ad41891e1132), their setup is not suitable to varying-traffic services (night vs day, business days vs weekends, etc.). In this post I prove mathematically that Google's static burn rate holds only in the case of constant traffic and I show that the correct expression for the burn rate should be dynamic, as follows:
+Google's solution constitutes a significant milestone in the ability to create alerting setup with both high recall and high precision. However, as I show in my [two-part post](https://medium.com/@yairstark/error-budget-is-all-you-need-part-2-ad41891e1132), their setup is not suitable to varying-traffic services (night vs day, business days vs weekends, etc.). In this post I prove mathematically that Google's static burn rate holds only in the case of constant traffic and I show that the correct expression for the burn rate should be dynamic, as follows:
 
 $$ BurnRate (t) = {N_{slo}(t) \over N_a(t)} \times EBP $$
 
